@@ -68,4 +68,15 @@ object CommonUtils {
             0.0
         }
     }
+
+    fun formatReadableDuration(seconds: Long): String {
+        val numberOfHours = (seconds) / 3600
+        val numberOfMinutes = (seconds % 3600) / 60
+        val numberOfSeconds = (seconds % 3600) % 60
+
+        return String.format(
+            "%02d:%02d:%02d",
+            numberOfHours, numberOfMinutes, numberOfSeconds
+        )
+    }
 }

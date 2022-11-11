@@ -24,7 +24,10 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
@@ -49,19 +53,24 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.whydah.raramuri.R
 import com.whydah.raramuri.extensions.formatThousandWithPostFix
+import com.whydah.raramuri.extensions.toSecond
 import com.whydah.raramuri.presentation.home.HomeViewModel
 import com.whydah.raramuri.service.LocationBroadcastReceiver
 import com.whydah.raramuri.service.LocationService
 import com.whydah.raramuri.utils.CommonUtils
+import java.util.Calendar
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalPagerApi::class)
 @Composable
 fun RunScreen(
     navController: NavController,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    runViewModel: RunViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val backgroundLocationPermissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+
+    val runningTimeDataState by remember(runViewModel) { runViewModel.runningTimeDataState }.collectAsState()
 
     val distanceLabel = remember { mutableStateOf(0.0) }
     val avgPaceLabel = remember { mutableStateOf(0.0) }
@@ -94,6 +103,12 @@ fun RunScreen(
         }
     )
 
+    DisposableEffect(true) {
+        onDispose {
+            runViewModel.endTimerRunning()
+        }
+    }
+
     LaunchedEffect(true) {
         if (locationPermissionsState.allPermissionsGranted) {
             if (!backgroundLocationPermissionState.status.isGranted) {
@@ -103,6 +118,9 @@ fun RunScreen(
                 action = LocationService.ACTION_START
                 context.startService(this)
             }
+
+            val currentTime = Calendar.getInstance().timeInMillis.toSecond()
+            runViewModel.startTimerRunning(endTime = Int.MAX_VALUE.toLong(), startTime = currentTime, currentTime = currentTime)
         } else {
             locationPermissionsState.launchMultiplePermissionRequest()
         }
@@ -122,7 +140,7 @@ fun RunScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text("0:00:00", fontSize = 12.sp)
+                        Text(runningTimeDataState.runningTime, fontSize = 12.sp)
 
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -131,6 +149,9 @@ fun RunScreen(
                                 .clip(CircleShape)
                                 .background(Color.Red)
                                 .padding(10.dp)
+                                .clickable {
+                                    //stop running, send data to app
+                                }
                         ) {
                             Icon(imageVector = Icons.Default.Pause, contentDescription = null, modifier = Modifier.size(15.dp))
                         }
@@ -162,7 +183,7 @@ fun RunScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Text("0:00:00", fontSize = 12.sp)
+                        Text(runningTimeDataState.runningTime, fontSize = 12.sp)
 
                         Spacer(modifier = Modifier.height(10.dp))
 

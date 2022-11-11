@@ -13,7 +13,6 @@ import android.location.Location
 import android.os.Build
 import android.os.IBinder
 import android.provider.ContactsContract.Directory.PACKAGE_NAME
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.LocationServices
@@ -30,7 +29,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -39,6 +37,7 @@ class LocationService : Service() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
+
 
     private lateinit var notificationManager: NotificationManager
 
@@ -58,6 +57,8 @@ class LocationService : Service() {
 
     private var startTime: Long = 0
 
+    private var runningTime: String = "00:00:00"
+
     companion object {
         const val ACTION_START = "ACTION_START"
 
@@ -73,6 +74,8 @@ class LocationService : Service() {
         internal const val CURRENT_DISTANCE = "$PACKAGE_NAME.CURRENT_DISTANCE"
 
         internal const val AVG_PACE = "$PACKAGE_NAME.AVG_PACE"
+
+        internal const val TOTAL_RUNNING_TIME = "$PACKAGE_NAME.TOTAL_RUNNING_TIME"
     }
 
     override fun onCreate() {
@@ -110,12 +113,14 @@ class LocationService : Service() {
 
     private fun notifyToActivity(
         currentDistance: Double,
-        avgPace: Double
+        avgPace: Double,
+        totalRunningTime: String
     ) {
         //notify to activity
         val intent = Intent(ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST)
         intent.putExtra(CURRENT_DISTANCE, currentDistance)
         intent.putExtra(AVG_PACE, avgPace)
+        intent.putExtra(TOTAL_RUNNING_TIME, totalRunningTime)
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
@@ -145,7 +150,7 @@ class LocationService : Service() {
                     )
 
                     //notify for view
-                    notifyToActivity(currentDistance = totalDistance, avgPace = avgPace)
+                    notifyToActivity(currentDistance = totalDistance, avgPace = avgPace, totalRunningTime = runningTime)
 
                     updateNotification()
 
@@ -206,6 +211,7 @@ class LocationService : Service() {
         val notificationCompatBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
 
         return notificationCompatBuilder.setStyle(bigTextStyle).setContentTitle(titleText).setContentText(subText)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setSmallIcon(R.drawable.ic_notification).setDefaults(Notification.DEFAULT_LIGHTS).setOngoing(true).setVibrate(null)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setContentIntent(activityPendingIntent).build()
     }
@@ -215,6 +221,7 @@ class LocationService : Service() {
             locationClient.setLocationServiceRunningStatus(false)
 
             stopForeground(STOP_FOREGROUND_DETACH)
+
             stopSelf()
         } catch (e: Exception) {
             println(e)

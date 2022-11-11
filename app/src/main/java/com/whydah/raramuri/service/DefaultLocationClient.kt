@@ -31,6 +31,7 @@ class DefaultLocationClient(
             }
 
             if (!this@DefaultLocationClient::locationRequest.isInitialized) {
+                println("INIT LOCATION REQUEST")
                 locationRequest = LocationRequest.Builder(interval)
                     .setIntervalMillis(interval)
                     .setMinUpdateIntervalMillis(interval)
@@ -46,19 +47,27 @@ class DefaultLocationClient(
                 override fun onLocationResult(result: LocationResult) {
                     super.onLocationResult(result)
 
+                    println("RECEIVE LOCATION")
+
                     result.locations.lastOrNull()?.let {
                         launch {
                             send(it)
+
+                            println("SEND LOCATION")
                         }
                     }
                 }
             }
 
             if (!isLocationServiceRunning()) {
+                println("REQUEST LOCATION REQUEST")
+
                 client.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
             }
 
             awaitClose {
+                println("REMOVE LOCATION REQUEST")
+
                 client.removeLocationUpdates(locationCallback)
             }
         }
