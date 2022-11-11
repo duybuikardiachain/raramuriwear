@@ -1,5 +1,6 @@
 package com.whydah.raramuri.presentation.home
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import com.whydah.raramuri.R
 import com.whydah.raramuri.presentation.component.CustomChip
 import com.whydah.raramuri.presentation.root.NavTarget
 import com.whydah.raramuri.presentation.theme.RaramuriWearTheme
+import com.whydah.raramuri.service.MusicService
 
 @Composable
 fun HomeScreen(
@@ -49,7 +51,10 @@ fun HomeScreen(
                     content = "Walk",
                     imageVector = Icons.Rounded.DirectionsWalk,
                     onClick = {
-
+                        Intent(context, MusicService::class.java).apply {
+                            action = MusicService.ACTION_START
+                            context.startService(this)
+                        }
                     },
                     backgroundRes = R.drawable.iv_cloud1
                 )
