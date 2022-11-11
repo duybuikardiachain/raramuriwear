@@ -114,6 +114,8 @@ dependencies {
 
     implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
+
+    implementation "com.airbnb.android:lottie-compose:4.2.2"
 }
 
 kapt {
