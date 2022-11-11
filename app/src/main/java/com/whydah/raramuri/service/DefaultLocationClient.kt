@@ -3,7 +3,6 @@ package com.whydah.raramuri.service
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
-import android.location.LocationManager
 import android.os.Looper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -20,6 +19,10 @@ class DefaultLocationClient(
     private val context: Context,
     private val client: FusedLocationProviderClient
 ) : LocationClient {
+    var isServiceRunning: Boolean = false
+
+    private lateinit var locationRequest: LocationRequest
+
     @SuppressLint("MissingPermission")
     override fun getLocationUpdates(interval: Long): Flow<Location> {
         return callbackFlow {
@@ -27,18 +30,22 @@ class DefaultLocationClient(
                 println("PERMISSION ERROR")
             }
 
-            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (!this@DefaultLocationClient::locationRequest.isInitialized) {
+                locationRequest = LocationRequest.Builder(interval)
+                    .setIntervalMillis(interval)
+                    .setMinUpdateIntervalMillis(interval)
+                    .setMaxUpdateDelayMillis(interval)
+                    .setPriority(PRIORITY_HIGH_ACCURACY)
+                    .setMinUpdateDistanceMeters(1f)
+                    .setWaitForAccurateLocation(true)
+                    .build()
+            }
 
-            val request = LocationRequest.Builder(interval)
-                .setIntervalMillis(interval)
-                .setWaitForAccurateLocation(true)
-                .setPriority(PRIORITY_HIGH_ACCURACY)
-                .setMinUpdateDistanceMeters(5f)
-                .build()
 
             val locationCallback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     super.onLocationResult(result)
+
                     result.locations.lastOrNull()?.let {
                         launch {
                             send(it)
@@ -47,12 +54,22 @@ class DefaultLocationClient(
                 }
             }
 
-            client.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
+            if (!isLocationServiceRunning()) {
+                client.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+            }
 
             awaitClose {
                 client.removeLocationUpdates(locationCallback)
             }
         }
+    }
+
+    override fun isLocationServiceRunning(): Boolean {
+        return isServiceRunning
+    }
+
+    override fun setLocationServiceRunningStatus(value: Boolean) {
+        isServiceRunning = value
     }
 
 }

@@ -9,11 +9,16 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.location.Location
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
 import com.whydah.raramuri.R
+import com.whydah.raramuri.extensions.formatThousandWithPostFix
+import com.whydah.raramuri.extensions.toSecond
+import com.whydah.raramuri.presentation.MainActivity
+import com.whydah.raramuri.utils.CommonUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,20 +27,30 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.util.Calendar
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MusicService : Service(), SharedPreferences.OnSharedPreferenceChangeListener {
+class LocationService : Service() {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var notificationManager: NotificationManager
+
     private lateinit var locationClient: LocationClient
+
+    private lateinit var currentLocation: Location
+
+    private lateinit var previousLocation: Location
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val mainServiceScope = CoroutineScope(Dispatchers.Main)
+    private var totalDistance: Double = 0.0
+
+    private var avgPace = 0.0
+
+    private var startTime: Long = 0
 
     companion object {
         const val ACTION_START = "ACTION_START"
@@ -55,6 +70,7 @@ class MusicService : Service(), SharedPreferences.OnSharedPreferenceChangeListen
             applicationContext,
             LocationServices.getFusedLocationProviderClient(applicationContext)
         )
+        startTime = Calendar.getInstance().timeInMillis.toSecond()
     }
 
     override fun onStartCommand(
@@ -74,45 +90,52 @@ class MusicService : Service(), SharedPreferences.OnSharedPreferenceChangeListen
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun updateNotification(text: String) {
-        val notification = generateNotification(text)
+    private fun updateNotification() {
+        val notification = generateNotification()
         startForeground(NOTIFICATION_ID, notification)
     }
 
     private fun startRegister() {
         try {
-            //start foreground service
-            updateNotification("getString(R.string.waiting_to_MC_signals)")
-
             locationClient.getLocationUpdates(5000)
                 .catch {
                     println(it)
                 }.onEach { location ->
-                    println(location)
+                    //start foreground service
+                    locationClient.setLocationServiceRunningStatus(true)
+
+                    //apply new location
+                    currentLocation = location
+                    if (!this::previousLocation.isInitialized) {
+                        //set previous location to current location
+                        previousLocation = currentLocation
+                    }
+
+                    //calculate distance and total distance
+                    val distance = currentLocation.distanceTo(previousLocation)
+                    totalDistance += distance
+
+                    //calculate avg pace
+                    avgPace = CommonUtils.calculatePaceByDouble(
+                        startTime = startTime, endTime = Calendar.getInstance().timeInMillis.toSecond(), distance = totalDistance
+                    )
+
+                    updateNotification()
+
+                    println(totalDistance)
+
                 }.launchIn(serviceScope)
-
-//            firestoreServiceManager.listenTalkSnapshot(eventId).flowOn(Dispatchers.IO).catch {
-//                println(it)
-//            }.onEach { talk ->
-//                mainServiceScope.launch {
-//                    talksQueue.add(talk)
-//                    if (!isPlayingAnnouncement) {
-//                        playMedia(talk.audioLink)
-//                    }
-//                }
-//            }.launchIn(serviceScope)
-
-            //register shared changed
-            sharedPreferences.registerOnSharedPreferenceChangeListener(this)
         } catch (e: Exception) {
             println(e.message)
         }
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
-    private fun generateNotification(notificationText: String): Notification {
+    private fun generateNotification(): Notification {
         // 0. Get data
-        val titleText = getString(R.string.app_name)
+        val titleText = "Raramuri"
+        val subText = "${totalDistance.formatThousandWithPostFix(maxDigit = 2)} - ${CommonUtils.getPaceDetail(pace = avgPace)}"
+        println(subText)
 
         // 1. Create Notification Channel for O+ and beyond devices (26+).
 
@@ -130,10 +153,12 @@ class MusicService : Service(), SharedPreferences.OnSharedPreferenceChangeListen
         notificationManager.createNotificationChannel(notificationChannel)
 
         // 2. Build the BIG_TEXT_STYLE.
-        val bigTextStyle = NotificationCompat.BigTextStyle().bigText(notificationText).setBigContentTitle(titleText)
+        val bigTextStyle = NotificationCompat.BigTextStyle().bigText(subText).setBigContentTitle(titleText)
 
         // 3. Set up main Intent/Pending Intents for notification.
-        val launchActivityIntent = Intent()
+        val launchActivityIntent = Intent(this, MainActivity::class.java).apply {
+
+        }
 
         val activityPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PendingIntent.getActivity(
@@ -145,38 +170,23 @@ class MusicService : Service(), SharedPreferences.OnSharedPreferenceChangeListen
             )
         }
 
-        val cancelIntent = Intent(this, MusicService::class.java)
-        cancelIntent.action = ACTION_STOP
-
-        val serviceCancelIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PendingIntent.getService(
-                this, 10, cancelIntent, PendingIntent.FLAG_IMMUTABLE
-            )
-        } else {
-            PendingIntent.getService(
-                this, 10, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT
-            )
-        }
-
-
         // 4. Build and issue the notification.
         // Notification Channel Id is ignored for Android pre O (26).
         val notificationCompatBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
 
-        return notificationCompatBuilder.setStyle(bigTextStyle).setContentTitle(titleText).setContentText(notificationText)
+        return notificationCompatBuilder.setStyle(bigTextStyle).setContentTitle(titleText).setContentText(subText)
             .setSmallIcon(R.drawable.ic_notification).setDefaults(Notification.DEFAULT_LIGHTS).setOngoing(true).setVibrate(null)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setContentIntent(activityPendingIntent).build()
     }
 
     private fun stopRegister() {
         try {
+            locationClient.setLocationServiceRunningStatus(false)
 
             stopForeground(STOP_FOREGROUND_DETACH)
             stopSelf()
-
-            sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
-        } catch (_: Exception) {
-
+        } catch (e: Exception) {
+            println(e)
         }
     }
 
@@ -189,12 +199,4 @@ class MusicService : Service(), SharedPreferences.OnSharedPreferenceChangeListen
     override fun onBind(p0: Intent?): IBinder? {
         TODO("Not yet implemented")
     }
-
-    override fun onSharedPreferenceChanged(
-        p0: SharedPreferences?,
-        key: String?
-    ) {
-
-    }
-
 }

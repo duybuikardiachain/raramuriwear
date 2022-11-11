@@ -7,4 +7,8 @@ interface LocationClient {
     fun getLocationUpdates(interval: Long): Flow<Location>
 
     class LocationException(message: String) : Exception()
+
+    fun isLocationServiceRunning(): Boolean
+
+    fun setLocationServiceRunningStatus(value: Boolean)
 }

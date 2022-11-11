@@ -24,7 +24,7 @@ import com.whydah.raramuri.R
 import com.whydah.raramuri.presentation.component.CustomChip
 import com.whydah.raramuri.presentation.root.NavTarget
 import com.whydah.raramuri.presentation.theme.RaramuriWearTheme
-import com.whydah.raramuri.service.MusicService
+import com.whydah.raramuri.service.LocationService
 
 @Composable
 fun HomeScreen(
@@ -51,8 +51,8 @@ fun HomeScreen(
                     content = "Walk",
                     imageVector = Icons.Rounded.DirectionsWalk,
                     onClick = {
-                        Intent(context, MusicService::class.java).apply {
-                            action = MusicService.ACTION_START
+                        Intent(context, LocationService::class.java).apply {
+                            action = LocationService.ACTION_START
                             context.startService(this)
                         }
                     },
