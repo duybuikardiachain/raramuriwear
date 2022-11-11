@@ -1,6 +1,7 @@
 package com.whydah.raramuri.presentation.component
 
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,7 +36,8 @@ fun CustomChip(
     Chip(
         modifier = modifier
             .width(150.dp)
-            .height(40.dp),
+            .height(30.dp),
+        colors = ChipDefaults.chipColors(backgroundColor = colorResource(id = R.color.color_282828)),
         onClick = { onClick() },
         label = {
             Text(
@@ -49,8 +51,8 @@ fun CustomChip(
             Icon(
                 imageVector = imageVector,
                 contentDescription = "triggers meditation action",
-                modifier = Modifier,
-                tint = colorResource(id = R.color.main_raramuri_color)
+                tint = colorResource(id = R.color.main_raramuri_color),
+                modifier = Modifier.size(20.dp)
             )
         },
     )

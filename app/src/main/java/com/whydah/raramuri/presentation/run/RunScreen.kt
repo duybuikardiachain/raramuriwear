@@ -70,6 +70,7 @@ import com.whydah.raramuri.R
 import com.whydah.raramuri.extensions.formatThousandWithPostFix
 import com.whydah.raramuri.extensions.toSecond
 import com.whydah.raramuri.presentation.home.HomeViewModel
+import com.whydah.raramuri.presentation.root.NavTarget
 import com.whydah.raramuri.service.LocationBroadcastReceiver
 import com.whydah.raramuri.service.LocationService
 import com.whydah.raramuri.utils.CommonUtils
@@ -151,7 +152,11 @@ fun RunScreen(
     }
 
     fun settings() {
+        navController.navigate(NavTarget.HomeScreen.route)
+    }
 
+    fun cancel() {
+        navController.navigate(NavTarget.HomeScreen.route)
     }
 
     if (homeViewModel.isLocationEnabled(context)) {
@@ -224,6 +229,7 @@ fun RunScreen(
                                             .clip(CircleShape)
                                             .background(color = colorResource(id = R.color.color_282828))
                                             .padding(5.dp)
+                                            .clickable { cancel() }
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.RestoreFromTrash,
@@ -239,7 +245,8 @@ fun RunScreen(
                                     modifier = Modifier
                                         .size(width = 50.dp, height = 20.dp)
                                         .clip(RoundedCornerShape(80))
-                                        .background(color = colorResource(id = R.color.color_282828)),
+                                        .background(color = colorResource(id = R.color.color_282828))
+                                        .clickable { clickStop.value = false },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(text = "Resume", fontSize = 9.sp)
@@ -252,12 +259,7 @@ fun RunScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(vertical = 16.dp, horizontal = 20.dp)
-                                .pointerInput(key1 = "someStringKey?") {
-                                    detectTapGestures(
-                                        onLongPress = { Log.d("HUU_CHECK", "aaa") }
-                                    )
-                                },
+                                .padding(vertical = 16.dp, horizontal = 20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {

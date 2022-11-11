@@ -34,24 +34,21 @@ fun HomeScreen(
     homeViewModel: HomeViewModel
 ) {
     val context = LocalContext.current
-//    LaunchedEffect(true) {
-//        homeViewModel.hashGps(context)
-//    }
-//
-    val state = rememberLazyListState()
+    LaunchedEffect(true) {
+        homeViewModel.hashGps(context)
+    }
 
     RaramuriWearTheme {
-        LazyColumn(
+        ScalingLazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 20.dp)
                 .background(MaterialTheme.colors.background),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 3.dp),
+                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Walk",
                     imageVector = Icons.Rounded.DirectionsWalk,
                     onClick = {
@@ -61,23 +58,16 @@ fun HomeScreen(
             }
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 3.dp),
+                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Run",
                     imageVector = Icons.Rounded.DirectionsRun,
                     onClick = { navController.navigate(NavTarget.RunScreen.route) },
                 )
             }
+
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 3.dp),
-                    content = "Run",
-                    imageVector = Icons.Rounded.DirectionsRun,
-                    onClick = { navController.navigate(NavTarget.RunScreen.route) },
-                )
-            }
-            item {
-                CustomChip(
-                    modifier = Modifier.padding(bottom = 3.dp),
+                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Notification",
                     imageVector = Icons.Rounded.Notifications,
                     onClick = {
@@ -87,7 +77,7 @@ fun HomeScreen(
             }
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 3.dp),
+                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Group",
                     imageVector = Icons.Rounded.Group,
                     onClick = {
