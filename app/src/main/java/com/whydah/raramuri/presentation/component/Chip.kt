@@ -31,12 +31,11 @@ fun CustomChip(
     content: String,
     imageVector: ImageVector,
     onClick: () -> Unit,
-    backgroundRes: Int = R.drawable.iv_cloud1,
 ) {
     Chip(
         modifier = modifier
             .width(150.dp)
-            .height(32.dp),
+            .height(40.dp),
         onClick = { onClick() },
         label = {
             Text(
@@ -54,9 +53,6 @@ fun CustomChip(
                 tint = colorResource(id = R.color.main_raramuri_color)
             )
         },
-        colors = ChipDefaults.imageBackgroundChipColors(
-            backgroundImagePainter = painterResource(id = backgroundRes)
-        ),
     )
 }
 

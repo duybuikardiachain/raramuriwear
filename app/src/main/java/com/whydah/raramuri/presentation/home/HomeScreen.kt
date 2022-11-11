@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DirectionsRun
 import androidx.compose.material.icons.rounded.DirectionsWalk
@@ -32,12 +34,14 @@ fun HomeScreen(
     homeViewModel: HomeViewModel
 ) {
     val context = LocalContext.current
-    LaunchedEffect(true) {
-        homeViewModel.hashGps(context)
-    }
+//    LaunchedEffect(true) {
+//        homeViewModel.hashGps(context)
+//    }
+//
+    val state = rememberLazyListState()
 
     RaramuriWearTheme {
-        ScalingLazyColumn(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 20.dp)
@@ -53,7 +57,6 @@ fun HomeScreen(
                     onClick = {
 
                     },
-                    backgroundRes = R.drawable.iv_cloud1
                 )
             }
             item {
@@ -62,7 +65,14 @@ fun HomeScreen(
                     content = "Run",
                     imageVector = Icons.Rounded.DirectionsRun,
                     onClick = { navController.navigate(NavTarget.RunScreen.route) },
-                    backgroundRes = R.drawable.iv_cloud2
+                )
+            }
+            item {
+                CustomChip(
+                    modifier = Modifier.padding(bottom = 3.dp),
+                    content = "Run",
+                    imageVector = Icons.Rounded.DirectionsRun,
+                    onClick = { navController.navigate(NavTarget.RunScreen.route) },
                 )
             }
             item {
@@ -73,7 +83,6 @@ fun HomeScreen(
                     onClick = {
 
                     },
-                    backgroundRes = R.drawable.iv_cloud3
                 )
             }
             item {
@@ -94,7 +103,6 @@ fun HomeScreen(
                     onClick = {
 
                     },
-                    backgroundRes = R.drawable.iv_cloud2
                 )
             }
         }

@@ -142,7 +142,7 @@ fun RunScreen(
                     ) {
                         Text(runningTimeDataState.runningTime, fontSize = 12.sp)
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(15.dp))
 
                         Box(
                             modifier = Modifier
@@ -181,18 +181,15 @@ fun RunScreen(
                             Text(text = "${heart.value}")
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(runningTimeDataState.runningTime, fontSize = 12.sp)
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        Text(
-                            CommonUtils.getPaceDetail(avgPaceLabel.value), color = colorResource(id = R.color.main_raramuri_color),
-                            fontWeight = FontWeight.Bold, fontSize = 20.sp
-                        )
+                        Text( CommonUtils.getPaceDetail(avgPaceLabel.value), color = colorResource(id = R.color.main_raramuri_color), fontWeight = FontWeight.Bold, fontSize = 24.sp)
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(distanceLabel.value.formatThousandWithPostFix(2), fontSize = 10.sp)
                     }
