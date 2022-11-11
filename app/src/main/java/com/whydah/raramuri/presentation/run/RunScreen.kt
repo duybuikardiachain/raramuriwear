@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -77,7 +78,6 @@ fun RunScreen(
 
     val heart = remember { mutableStateOf(86) }
     val tabPager = rememberPagerState(0)
-
 
     //listen broadcast
     LocationBroadcastReceiver(systemAction = LocationService.ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST, onLocationEvent = { intent ->
@@ -127,71 +127,90 @@ fun RunScreen(
     }
 
     if (homeViewModel.isLocationEnabled(context)) {
-        HorizontalPager(
-            count = 2,
-            state = tabPager
-        ) {
-            when (it) {
-                1 -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(vertical = 16.dp, horizontal = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(runningTimeDataState.runningTime, fontSize = 12.sp)
-
-                        Spacer(modifier = Modifier.height(15.dp))
-
-                        Box(
+        Column(modifier = Modifier.fillMaxSize()) {
+            HorizontalPager(
+                modifier = Modifier.weight(0.9f),
+                count = 2,
+                state = tabPager
+            ) {
+                when (it) {
+                    1 -> {
+                        Column(
                             modifier = Modifier
-                                .clip(CircleShape)
-                                .background(Color.Red)
-                                .padding(10.dp)
-                                .clickable {
-                                    //stop running, send data to app
-                                }
+                                .fillMaxSize()
+                                .padding(vertical = 16.dp, horizontal = 20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Icon(imageVector = Icons.Default.Pause, contentDescription = null, modifier = Modifier.size(15.dp))
+                            Text(runningTimeDataState.runningTime, fontSize = 12.sp)
+
+                            Spacer(modifier = Modifier.height(15.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(Color.Red)
+                                    .padding(10.dp)
+                                    .clickable {
+                                        //stop running, send data to app
+                                    }
+                            ) {
+                                Icon(imageVector = Icons.Default.Pause, contentDescription = null, modifier = Modifier.size(15.dp))
+                            }
+                        }
+                    }
+
+                    0 -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(vertical = 16.dp, horizontal = 20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.HeartBroken,
+                                    contentDescription = "",
+                                    tint = colorResource(id = R.color.main_raramuri_color),
+                                    modifier = Modifier.size(15.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(3.dp))
+
+                                Text(text = "${heart.value}")
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Text(runningTimeDataState.runningTime, fontSize = 12.sp)
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Text( CommonUtils.getPaceDetail(avgPaceLabel.value), color = colorResource(id = R.color.main_raramuri_color), fontWeight = FontWeight.Bold, fontSize = 24.sp)
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Text(distanceLabel.value.formatThousandWithPostFix(2), fontSize = 10.sp)
+
                         }
                     }
                 }
+            }
 
-                0 -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(vertical = 16.dp, horizontal = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.HeartBroken,
-                                contentDescription = "",
-                                tint = colorResource(id = R.color.main_raramuri_color),
-                                modifier = Modifier.size(15.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(3.dp))
-
-                            Text(text = "${heart.value}")
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(runningTimeDataState.runningTime, fontSize = 12.sp)
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text( CommonUtils.getPaceDetail(avgPaceLabel.value), color = colorResource(id = R.color.main_raramuri_color), fontWeight = FontWeight.Bold, fontSize = 24.sp)
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(distanceLabel.value.formatThousandWithPostFix(2), fontSize = 10.sp)
+            Row(modifier = Modifier
+                .weight(0.1f)
+                .fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                (0..1).forEach {
+                    Box(modifier = Modifier
+                        .size(9.dp)
+                        .clip(CircleShape)
+                        .background(if (it == tabPager.currentPage) colorResource(id = R.color.main_raramuri_color) else Color.Gray)
+                    )
+                    if (it == 0) {
+                        Spacer(modifier = Modifier.width(7.dp))
                     }
                 }
             }
