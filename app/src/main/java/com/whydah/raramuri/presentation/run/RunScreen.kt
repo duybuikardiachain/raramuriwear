@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,18 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Hearing
 import androidx.compose.material.icons.filled.HeartBroken
-import androidx.compose.material.icons.filled.Looks
-import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.SelectAll
-import androidx.compose.material.icons.filled.StickyNote2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -40,18 +33,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.Chip
-import androidx.wear.compose.material.HorizontalPageIndicator
 import androidx.wear.compose.material.Icon
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.ScalingLazyColumn
 import androidx.wear.compose.material.Text
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -61,8 +48,11 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.whydah.raramuri.R
+import com.whydah.raramuri.extensions.formatThousandWithPostFix
 import com.whydah.raramuri.presentation.home.HomeViewModel
+import com.whydah.raramuri.service.LocationBroadcastReceiver
 import com.whydah.raramuri.service.LocationService
+import com.whydah.raramuri.utils.CommonUtils
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalPagerApi::class)
 @Composable
@@ -72,9 +62,25 @@ fun RunScreen(
 ) {
     val context = LocalContext.current
     val backgroundLocationPermissionState = rememberPermissionState(permission = Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-    
+
+    val distanceLabel = remember { mutableStateOf(0.0) }
+    val avgPaceLabel = remember { mutableStateOf(0.0) }
+
     val heart = remember { mutableStateOf(86) }
     val tabPager = rememberPagerState(0)
+
+
+    //listen broadcast
+    LocationBroadcastReceiver(systemAction = LocationService.ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST, onLocationEvent = { intent ->
+        val action = intent.action
+        if (action == LocationService.ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST) {
+            val distance = intent.getDoubleExtra(LocationService.CURRENT_DISTANCE, 0.0)
+            val avgPace = intent.getDoubleExtra(LocationService.AVG_PACE, 0.0)
+
+            distanceLabel.value = distance
+            avgPaceLabel.value = avgPace
+        }
+    })
 
     val locationPermissionsState = rememberMultiplePermissionsState(
         listOf(
@@ -120,11 +126,17 @@ fun RunScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Box(modifier = Modifier.clip(CircleShape).background(Color.Red).padding(10.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(Color.Red)
+                                .padding(10.dp)
+                        ) {
                             Icon(imageVector = Icons.Default.Pause, contentDescription = null, modifier = Modifier.size(15.dp))
                         }
                     }
                 }
+
                 0 -> {
                     Column(
                         modifier = Modifier
@@ -154,15 +166,14 @@ fun RunScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Text("-:--", color = colorResource(id = R.color.main_raramuri_color), fontWeight = FontWeight.Bold, fontSize = 20.sp)
-
-                        Spacer(modifier = Modifier.height(5.dp))
-
-                        Text("/km", color = colorResource(id = R.color.main_raramuri_color), fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                        Text(
+                            CommonUtils.getPaceDetail(avgPaceLabel.value), color = colorResource(id = R.color.main_raramuri_color),
+                            fontWeight = FontWeight.Bold, fontSize = 20.sp
+                        )
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Text("0km", fontSize = 10.sp)
+                        Text(distanceLabel.value.formatThousandWithPostFix(2), fontSize = 10.sp)
                     }
                 }
             }

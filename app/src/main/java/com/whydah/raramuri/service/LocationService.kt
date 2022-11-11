@@ -12,8 +12,10 @@ import android.content.SharedPreferences
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
+import android.provider.ContactsContract.Directory.PACKAGE_NAME
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.LocationServices
 import com.whydah.raramuri.R
 import com.whydah.raramuri.extensions.formatThousandWithPostFix
@@ -64,6 +66,13 @@ class LocationService : Service() {
         private const val NOTIFICATION_ID = 987654321
 
         const val NOTIFICATION_CHANNEL_ID = "while_in_use_channel_01"
+
+        internal const val ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST =
+            "$PACKAGE_NAME.action.FOREGROUND_ONLY_LOCATION_BROADCAST"
+
+        internal const val CURRENT_DISTANCE = "$PACKAGE_NAME.CURRENT_DISTANCE"
+
+        internal const val AVG_PACE = "$PACKAGE_NAME.AVG_PACE"
     }
 
     override fun onCreate() {
@@ -99,6 +108,17 @@ class LocationService : Service() {
         startForeground(NOTIFICATION_ID, notification)
     }
 
+    private fun notifyToActivity(
+        currentDistance: Double,
+        avgPace: Double
+    ) {
+        //notify to activity
+        val intent = Intent(ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST)
+        intent.putExtra(CURRENT_DISTANCE, currentDistance)
+        intent.putExtra(AVG_PACE, avgPace)
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+    }
+
     private fun startRegister() {
         try {
             locationClient.getLocationUpdates(5000)
@@ -124,12 +144,15 @@ class LocationService : Service() {
                         startTime = startTime, endTime = Calendar.getInstance().timeInMillis.toSecond(), distance = totalDistance
                     )
 
+                    //notify for view
+                    notifyToActivity(currentDistance = totalDistance, avgPace = avgPace)
+
                     updateNotification()
 
                     println(totalDistance)
-                    mainScope.launch {
-                        Toast.makeText(this@LocationService, totalDistance.toString(), Toast.LENGTH_SHORT).show()
-                    }
+//                    mainScope.launch {
+//                        Toast.makeText(this@LocationService, totalDistance.toString(), Toast.LENGTH_SHORT).show()
+//                    }
 
 
                 }.launchIn(serviceScope)
