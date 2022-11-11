@@ -5,6 +5,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
+import com.google.android.gms.wearable.CapabilityClient
 import com.whydah.raramuri.presentation.home.HomeScreen
 import com.whydah.raramuri.presentation.home.HomeViewModel
 import com.whydah.raramuri.presentation.run.RunScreen
@@ -13,7 +14,8 @@ import com.whydah.raramuri.presentation.splash.SplashScreen
 
 @Composable
 fun AppNavigationController(
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel,
+    capabilityClient: CapabilityClient
 ) {
     val navController = rememberSwipeDismissableNavController()
 
@@ -26,11 +28,11 @@ fun AppNavigationController(
         composable(
             route = splashRoute
         ) {
-            SplashScreen(navController = navController, homeViewModel = homeViewModel)
+            SplashScreen(navController = navController, homeViewModel = homeViewModel, capabilityClient = capabilityClient)
         }
 
         composable(route = homeRoute) {
-            HomeScreen(navController = navController, homeViewModel = homeViewModel)
+            HomeScreen(navController = navController, homeViewModel = homeViewModel, capabilityClient = capabilityClient)
         }
 
         composable(

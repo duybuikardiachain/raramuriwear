@@ -3,6 +3,8 @@ package com.whydah.raramuri.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.android.gms.wearable.CapabilityClient
+import com.google.android.gms.wearable.Wearable
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.whydah.raramuri.R
@@ -10,6 +12,7 @@ import com.whydah.raramuri.WearApplication
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ActivityContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton

@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.LocationServices
 import com.whydah.raramuri.R
+import com.whydah.raramuri.data.History
 import com.whydah.raramuri.extensions.formatThousandWithPostFix
 import com.whydah.raramuri.extensions.toSecond
 import com.whydah.raramuri.presentation.MainActivity
@@ -38,6 +39,7 @@ class LocationService : Service() {
     @Inject
     lateinit var sharedPreferences: SharedPreferences
 
+    private var historyList: ArrayList<History> = arrayListOf()
 
     private lateinit var notificationManager: NotificationManager
 
@@ -49,7 +51,7 @@ class LocationService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private val mainScope = CoroutineScope(Dispatchers.Main)
+//    private val mainScope = CoroutineScope(Dispatchers.Main)
 
     private var totalDistance: Double = 0.0
 
@@ -68,14 +70,11 @@ class LocationService : Service() {
 
         const val NOTIFICATION_CHANNEL_ID = "while_in_use_channel_01"
 
-        internal const val ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST =
-            "$PACKAGE_NAME.action.FOREGROUND_ONLY_LOCATION_BROADCAST"
+        internal const val ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST = "$PACKAGE_NAME.action.FOREGROUND_ONLY_LOCATION_BROADCAST"
 
         internal const val CURRENT_DISTANCE = "$PACKAGE_NAME.CURRENT_DISTANCE"
 
         internal const val AVG_PACE = "$PACKAGE_NAME.AVG_PACE"
-
-        internal const val TOTAL_RUNNING_TIME = "$PACKAGE_NAME.TOTAL_RUNNING_TIME"
     }
 
     override fun onCreate() {
@@ -83,8 +82,7 @@ class LocationService : Service() {
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         locationClient = DefaultLocationClient(
-            applicationContext,
-            LocationServices.getFusedLocationProviderClient(applicationContext)
+            applicationContext, LocationServices.getFusedLocationProviderClient(applicationContext)
         )
         startTime = Calendar.getInstance().timeInMillis.toSecond()
     }
@@ -113,54 +111,57 @@ class LocationService : Service() {
 
     private fun notifyToActivity(
         currentDistance: Double,
-        avgPace: Double,
-        totalRunningTime: String
+        avgPace: Double
     ) {
         //notify to activity
         val intent = Intent(ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST)
         intent.putExtra(CURRENT_DISTANCE, currentDistance)
         intent.putExtra(AVG_PACE, avgPace)
-        intent.putExtra(TOTAL_RUNNING_TIME, totalRunningTime)
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
     }
 
     private fun startRegister() {
         try {
-            locationClient.getLocationUpdates(5000)
-                .catch {
-                    println(it)
-                }.onEach { location ->
-                    //start foreground service
-                    locationClient.setLocationServiceRunningStatus(true)
+            locationClient.getLocationUpdates(5000).catch {
+                println(it)
+            }.onEach { location ->
+                //start foreground service
+                locationClient.setLocationServiceRunningStatus(true)
 
-                    //apply new location
-                    currentLocation = location
-                    if (!this::previousLocation.isInitialized) {
-                        //set previous location to current location
-                        previousLocation = currentLocation
-                    }
+                //apply new location
+                currentLocation = location
+                if (!this::previousLocation.isInitialized) {
+                    //set previous location to current location
+                    previousLocation = currentLocation
+                }
 
-                    //calculate distance and total distance
-                    val distance = currentLocation.distanceTo(previousLocation)
-                    totalDistance += distance
+                //calculate distance and total distance
+                val distance = currentLocation.distanceTo(previousLocation)
+                totalDistance += distance
 
-                    //calculate avg pace
-                    avgPace = CommonUtils.calculatePaceByDouble(
-                        startTime = startTime, endTime = Calendar.getInstance().timeInMillis.toSecond(), distance = totalDistance
-                    )
+                //calculate avg pace
+                avgPace = CommonUtils.calculatePaceByDouble(
+                    startTime = startTime, endTime = Calendar.getInstance().timeInMillis.toSecond(), distance = totalDistance
+                )
 
-                    //notify for view
-                    notifyToActivity(currentDistance = totalDistance, avgPace = avgPace, totalRunningTime = runningTime)
+                //save it to list
+                val history = History(
+                    currentDistance = distance.toDouble(), totalDistance = totalDistance, previousGeoPoint = previousLocation,
+                    currentGeoPoint = currentLocation, timestamp = Calendar.getInstance().timeInMillis.toSecond(),
+                    elevation = currentLocation.altitude, otherData = mapOf()
+                )
 
-                    updateNotification()
+                historyList.add(history)
 
-                    println(totalDistance)
-//                    mainScope.launch {
-//                        Toast.makeText(this@LocationService, totalDistance.toString(), Toast.LENGTH_SHORT).show()
-//                    }
+                //notify for view
+                notifyToActivity(currentDistance = totalDistance, avgPace = avgPace)
 
+                updateNotification()
 
-                }.launchIn(serviceScope)
+                //update back to the list
+                previousLocation = currentLocation
+
+            }.launchIn(serviceScope)
         } catch (e: Exception) {
             println(e.message)
         }
@@ -211,9 +212,9 @@ class LocationService : Service() {
         val notificationCompatBuilder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
 
         return notificationCompatBuilder.setStyle(bigTextStyle).setContentTitle(titleText).setContentText(subText)
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .setSmallIcon(R.drawable.ic_notification).setDefaults(Notification.DEFAULT_LIGHTS).setOngoing(true).setVibrate(null)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setContentIntent(activityPendingIntent).build()
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE).setSmallIcon(R.drawable.ic_notification)
+            .setDefaults(Notification.DEFAULT_LIGHTS).setOngoing(true).setVibrate(null).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setContentIntent(activityPendingIntent).build()
     }
 
     private fun stopRegister() {

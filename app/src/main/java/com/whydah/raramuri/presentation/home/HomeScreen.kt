@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.ScalingLazyColumn
+import com.google.android.gms.wearable.CapabilityClient
+import com.google.android.gms.wearable.Wearable
 import com.whydah.raramuri.R
 import com.whydah.raramuri.presentation.component.CustomChip
 import com.whydah.raramuri.presentation.root.NavTarget
@@ -31,7 +33,8 @@ import com.whydah.raramuri.service.LocationService
 @Composable
 fun HomeScreen(
     navController: NavController,
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    capabilityClient: CapabilityClient
 ) {
     val context = LocalContext.current
     LaunchedEffect(true) {
@@ -51,7 +54,7 @@ fun HomeScreen(
                     content = "Walk",
                     imageVector = Icons.Rounded.DirectionsWalk,
                     onClick = {
-
+                        homeViewModel.onQueryOtherDevicesClicked(context, capabilityClient)
                     },
                 )
             }
