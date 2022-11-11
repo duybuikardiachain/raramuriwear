@@ -122,9 +122,9 @@ fun RunScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text("0:00:00", fontSize = 12.sp)
+                        Text("0:00:00", fontSize = 16.sp)
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(15.dp))
 
                         Box(
                             modifier = Modifier
@@ -160,18 +160,15 @@ fun RunScreen(
                             Text(text = "${heart.value}")
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        Text("0:00:00", fontSize = 12.sp)
+                        Text("0:00:00", fontSize = 14.sp)
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                        Text(
-                            CommonUtils.getPaceDetail(avgPaceLabel.value), color = colorResource(id = R.color.main_raramuri_color),
-                            fontWeight = FontWeight.Bold, fontSize = 20.sp
-                        )
+                        Text( CommonUtils.getPaceDetail(avgPaceLabel.value), color = colorResource(id = R.color.main_raramuri_color), fontWeight = FontWeight.Bold, fontSize = 24.sp)
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(distanceLabel.value.formatThousandWithPostFix(2), fontSize = 10.sp)
                     }
