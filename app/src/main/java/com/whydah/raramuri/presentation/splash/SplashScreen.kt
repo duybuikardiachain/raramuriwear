@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -18,19 +19,18 @@ import androidx.navigation.NavController
 import androidx.wear.compose.material.Scaffold
 import com.whydah.raramuri.R
 import com.whydah.raramuri.presentation.home.HomeScreen
+import com.whydah.raramuri.presentation.home.HomeViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navController: NavController) {
-    val showSplashScreenContent = remember { mutableStateOf(true) }
+fun SplashScreen(navController: NavController, homeViewModel: HomeViewModel) {
+    val showSplashScreenContent = rememberSaveable { mutableStateOf(true) }
 
     Scaffold {
         if (showSplashScreenContent.value) {
-            SplashScreenContent {
-                showSplashScreenContent.value = false
-            }
+            SplashScreenContent { showSplashScreenContent.value = false }
         } else {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController, homeViewModel = homeViewModel)
         }
     }
 }
