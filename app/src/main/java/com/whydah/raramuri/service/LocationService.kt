@@ -12,6 +12,7 @@ import android.content.SharedPreferences
 import android.location.Location
 import android.os.Build
 import android.os.IBinder
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.LocationServices
 import com.whydah.raramuri.R
@@ -27,6 +28,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -45,6 +47,8 @@ class LocationService : Service() {
     private lateinit var previousLocation: Location
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val mainScope = CoroutineScope(Dispatchers.Main)
 
     private var totalDistance: Double = 0.0
 
@@ -123,6 +127,10 @@ class LocationService : Service() {
                     updateNotification()
 
                     println(totalDistance)
+                    mainScope.launch {
+                        Toast.makeText(this@LocationService, totalDistance.toString(), Toast.LENGTH_SHORT).show()
+                    }
+
 
                 }.launchIn(serviceScope)
         } catch (e: Exception) {

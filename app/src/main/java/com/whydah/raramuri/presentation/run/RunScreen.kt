@@ -1,6 +1,7 @@
 package com.whydah.raramuri.presentation.run
 
 import android.Manifest
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,6 +62,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.whydah.raramuri.R
 import com.whydah.raramuri.presentation.home.HomeViewModel
+import com.whydah.raramuri.service.LocationService
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalPagerApi::class)
 @Composable
@@ -90,6 +92,10 @@ fun RunScreen(
         if (locationPermissionsState.allPermissionsGranted) {
             if (!backgroundLocationPermissionState.status.isGranted) {
                 backgroundLocationPermissionState.launchPermissionRequest()
+            }
+            Intent(context, LocationService::class.java).apply {
+                action = LocationService.ACTION_START
+                context.startService(this)
             }
         } else {
             locationPermissionsState.launchMultiplePermissionRequest()

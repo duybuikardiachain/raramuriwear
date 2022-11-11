@@ -51,10 +51,7 @@ fun HomeScreen(
                     content = "Walk",
                     imageVector = Icons.Rounded.DirectionsWalk,
                     onClick = {
-                        Intent(context, LocationService::class.java).apply {
-                            action = LocationService.ACTION_START
-                            context.startService(this)
-                        }
+
                     },
                     backgroundRes = R.drawable.iv_cloud1
                 )
