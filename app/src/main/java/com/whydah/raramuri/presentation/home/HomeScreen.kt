@@ -48,7 +48,6 @@ fun HomeScreen(
         ) {
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Walk",
                     imageVector = Icons.Rounded.DirectionsWalk,
                     onClick = {
@@ -58,7 +57,6 @@ fun HomeScreen(
             }
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Run",
                     imageVector = Icons.Rounded.DirectionsRun,
                     onClick = { navController.navigate(NavTarget.RunScreen.route) },
@@ -67,7 +65,6 @@ fun HomeScreen(
 
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Notification",
                     imageVector = Icons.Rounded.Notifications,
                     onClick = {
@@ -77,7 +74,6 @@ fun HomeScreen(
             }
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Group",
                     imageVector = Icons.Rounded.Group,
                     onClick = {
@@ -87,11 +83,10 @@ fun HomeScreen(
             }
             item {
                 CustomChip(
-                    modifier = Modifier.padding(bottom = 5.dp),
                     content = "Setting",
                     imageVector = Icons.Rounded.Settings,
                     onClick = {
-
+                        navController.navigate(NavTarget.SettingScreen.route)
                     },
                 )
             }

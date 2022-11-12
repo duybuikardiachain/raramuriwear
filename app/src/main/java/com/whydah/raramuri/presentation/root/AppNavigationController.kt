@@ -8,6 +8,7 @@ import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.whydah.raramuri.presentation.home.HomeScreen
 import com.whydah.raramuri.presentation.home.HomeViewModel
 import com.whydah.raramuri.presentation.run.RunScreen
+import com.whydah.raramuri.presentation.setting.SettingScreen
 import com.whydah.raramuri.presentation.splash.SplashScreen
 
 @Composable
@@ -19,7 +20,7 @@ fun AppNavigationController(
     val splashRoute = NavTarget.SplashScreen.route
     val homeRoute = NavTarget.HomeScreen.route
     val runRoute = NavTarget.RunScreen.route
-
+    val settingRoute = NavTarget.SettingScreen.route
 
     SwipeDismissableNavHost(navController = navController, startDestination = NavTarget.SplashScreen.route) {
         composable(
@@ -37,12 +38,18 @@ fun AppNavigationController(
         ) {
             RunScreen(navController = navController, homeViewModel = homeViewModel)
         }
+
+        composable(
+            route = settingRoute
+        ) {
+            SettingScreen(navController = navController)
+        }
     }
 }
 
 sealed class NavTarget(val route: String) {
     object HomeScreen : NavTarget(route = "HomeScreen")
     object RunScreen : NavTarget(route = "RunScreen")
-
     object SplashScreen : NavTarget(route = "SplashScreen")
+    object SettingScreen : NavTarget(route = "SettingScreen")
 }

@@ -1,6 +1,10 @@
 package com.whydah.raramuri.presentation.component
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -8,12 +12,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +43,8 @@ fun CustomChip(
     Chip(
         modifier = modifier
             .width(150.dp)
-            .height(30.dp),
+            .height(34.dp)
+            .padding(bottom = 4.dp),
         colors = ChipDefaults.chipColors(backgroundColor = colorResource(id = R.color.color_282828)),
         onClick = { onClick() },
         label = {
@@ -57,6 +65,73 @@ fun CustomChip(
         },
     )
 }
+
+@Composable
+fun CustomDoubleTextChip(
+    modifier: Modifier = Modifier,
+    firstContent: String,
+    secondContent: String,
+    onClick: () -> Unit,
+) {
+    Chip(
+        modifier = modifier
+            .width(150.dp)
+            .height(40.dp)
+            .padding(bottom = 4.dp),
+        colors = ChipDefaults.chipColors(backgroundColor = colorResource(id = R.color.color_282828)),
+        onClick = { onClick() },
+        label = {
+            Text(
+                text = firstContent,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 9.sp
+            )
+        },
+        secondaryLabel = {
+            Text(
+                text = secondContent,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 8.sp,
+                color = Color.Gray
+            )
+        }
+    )
+}
+
+@Composable
+fun CustomSingleTextChip(
+    modifier: Modifier = Modifier,
+    content: String,
+    onClick: () -> Unit,
+) {
+    Chip(
+        modifier = modifier
+            .width(150.dp)
+            .height(34.dp)
+            .padding(bottom = 3.dp),
+        colors = ChipDefaults.chipColors(backgroundColor = colorResource(id = R.color.color_282828)),
+        onClick = { onClick() },
+        label = {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = content,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 9.sp
+                )
+            }
+        },
+    )
+}
+
 
 @Composable
 fun CustomToggleChip(
