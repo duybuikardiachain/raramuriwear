@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.whydah.raramuri'
+    namespace 'com.kardiachain.raramuri'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.whydah.raramuri"
+        applicationId "com.kardiachain.raramuri.dev"
         minSdk 30
         targetSdk 33
         versionCode 1
