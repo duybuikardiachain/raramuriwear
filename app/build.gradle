@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'com.whydah.raramuri'
+    namespace 'com.kardiachain.raramuri'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.whydah.raramuri"
+        applicationId "com.kardiachain.raramuri"
         minSdk 30
         targetSdk 33
         versionCode 1
@@ -39,6 +39,7 @@ android {
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".dev"
             debuggable true
             minifyEnabled false
             shrinkResources false
@@ -47,6 +48,7 @@ android {
             multiDexEnabled = true
         }
         release {
+            applicationIdSuffix = ".debug"
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -114,6 +116,11 @@ dependencies {
 
     implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
     implementation "com.google.accompanist:accompanist-pager:$accompanist_version"
+
+    implementation "com.google.android.gms:play-services-wearable:18.0.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4"
 
     implementation "com.airbnb.android:lottie-compose:4.2.2"
 }
