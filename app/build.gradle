@@ -10,7 +10,7 @@ android {
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.kardiachain.raramuri.dev"
+        applicationId "com.kardiachain.raramuri"
         minSdk 30
         targetSdk 33
         versionCode 1
@@ -39,6 +39,7 @@ android {
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".dev"
             debuggable true
             minifyEnabled false
             shrinkResources false
@@ -47,6 +48,7 @@ android {
             multiDexEnabled = true
         }
         release {
+            applicationIdSuffix = ".debug"
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

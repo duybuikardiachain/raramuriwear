@@ -16,6 +16,8 @@ import android.provider.ContactsContract.Directory.PACKAGE_NAME
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.wearable.Wearable
+import com.google.gson.Gson
 import com.kardiachain.raramuri.R
 import com.kardiachain.raramuri.data.History
 import com.kardiachain.raramuri.extensions.formatThousandWithPostFix
@@ -30,6 +32,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -66,6 +70,8 @@ class LocationService : Service() {
 
         const val ACTION_STOP = "ACTION_STOP"
 
+        const val ACTION_REMOVE = "ACTION_REMOVE"
+
         private const val NOTIFICATION_ID = 987654321
 
         const val NOTIFICATION_CHANNEL_ID = "while_in_use_channel_01"
@@ -98,6 +104,19 @@ class LocationService : Service() {
             }
 
             ACTION_STOP -> {
+                stopRegister()
+
+                //send data back to phone
+                serviceScope.launch {
+                    val myNodes = Wearable.getNodeClient(this@LocationService).connectedNodes.await()
+                    val myLocationStr = Gson().toJson(historyList)
+                    for (node in myNodes) {
+                        Wearable.getMessageClient(this@LocationService).sendMessage(node.id, "/location", myLocationStr.toByteArray())
+                    }
+                }
+            }
+
+            ACTION_REMOVE -> {
                 stopRegister()
             }
         }
@@ -146,9 +165,11 @@ class LocationService : Service() {
 
                 //save it to list
                 val history = History(
-                    currentDistance = distance.toDouble(), totalDistance = totalDistance, previousGeoPoint = previousLocation,
-                    currentGeoPoint = currentLocation, timestamp = Calendar.getInstance().timeInMillis.toSecond(),
-                    elevation = currentLocation.altitude, otherData = mapOf()
+                    currentDistance = distance.toDouble(), totalDistance = totalDistance, previousLat = previousLocation.latitude,
+                    previousLng = previousLocation.longitude, previousElevation = previousLocation.altitude,
+                    currentLat = currentLocation.latitude, currentLng = currentLocation.longitude,
+                    timestamp = Calendar.getInstance().timeInMillis.toSecond(),
+                    currentElevation = currentLocation.altitude
                 )
 
                 historyList.add(history)

@@ -1,13 +1,13 @@
 package com.kardiachain.raramuri.data
 
-import android.location.Location
-
 data class History(
     val currentDistance: Double = 0.0,
     val totalDistance: Double = 0.0,
-    val previousGeoPoint: Location = Location(""),
-    val currentGeoPoint: Location = Location(""),
-    val timestamp: Long = 0,
-    val elevation: Double = 0.0,
-    val otherData: Map<String, Any> = mapOf()
+    val previousLat: Double = 0.0,
+    val previousLng: Double = 0.0,
+    val previousElevation: Double = 0.0,
+    val currentLat: Double = 0.0,
+    val currentLng: Double = 0.0,
+    val currentElevation: Double = 0.0,
+    val timestamp: Long = 0
 )

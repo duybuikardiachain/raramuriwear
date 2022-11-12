@@ -2,13 +2,11 @@ package com.kardiachain.raramuri.presentation.run
 
 import android.Manifest
 import android.content.Intent
-import android.util.Log
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -110,6 +107,16 @@ fun RunScreen(
         LottieCompositionSpec.Asset("running1.json")
     )
 
+    fun startService() {
+        Intent(context, LocationService::class.java).apply {
+            action = LocationService.ACTION_START
+            context.startService(this)
+        }
+
+        val currentTime = Calendar.getInstance().timeInMillis.toSecond()
+        runViewModel.startTimerRunning(endTime = Int.MAX_VALUE.toLong(), startTime = currentTime, currentTime = currentTime)
+    }
+
     val locationPermissionsState = rememberMultiplePermissionsState(
         listOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -118,7 +125,10 @@ fun RunScreen(
         onPermissionsResult = { mapResults ->
             if (mapResults[Manifest.permission.ACCESS_COARSE_LOCATION] == true && mapResults[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
                 backgroundLocationPermissionState.launchPermissionRequest()
+
+                startService()
             }
+
         }
     )
 
@@ -133,13 +143,8 @@ fun RunScreen(
             if (!backgroundLocationPermissionState.status.isGranted) {
                 backgroundLocationPermissionState.launchPermissionRequest()
             }
-            Intent(context, LocationService::class.java).apply {
-                action = LocationService.ACTION_START
-                context.startService(this)
-            }
 
-            val currentTime = Calendar.getInstance().timeInMillis.toSecond()
-            runViewModel.startTimerRunning(endTime = Int.MAX_VALUE.toLong(), startTime = currentTime, currentTime = currentTime)
+            startService()
         } else {
             locationPermissionsState.launchMultiplePermissionRequest()
         }
@@ -148,7 +153,15 @@ fun RunScreen(
     val clickStop = remember { mutableStateOf(false) }
 
     fun finishRace() {
+        //stop counter
+        runViewModel.endTimerRunning()
 
+        Intent(context, LocationService::class.java).apply {
+            action = LocationService.ACTION_STOP
+            context.startService(this)
+        }
+
+        navController.navigate(NavTarget.HomeScreen.route)
     }
 
     fun settings() {
@@ -157,6 +170,11 @@ fun RunScreen(
 
     fun cancel() {
         navController.navigate(NavTarget.HomeScreen.route)
+
+        Intent(context, LocationService::class.java).apply {
+            action = LocationService.ACTION_REMOVE
+            context.startService(this)
+        }
     }
 
     if (homeViewModel.isLocationEnabled(context)) {

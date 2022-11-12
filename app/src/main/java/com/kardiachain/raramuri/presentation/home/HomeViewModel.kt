@@ -17,6 +17,7 @@ import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.Wearable
 import com.kardiachain.raramuri.utils.AppConstants.MOBILE_CAPABILITY
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -60,6 +61,11 @@ class HomeViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
+                val myNodes = Wearable.getNodeClient(context).connectedNodes.await()
+                for (node in myNodes) {
+                    Wearable.getMessageClient(context).sendMessage(node.id, "/location", "HAHAHA".toByteArray())
+                }
+                println(myNodes)
                 val nodes = getCapabilitiesForReachableNodes(capabilityClient, context)
                     .filterValues { MOBILE_CAPABILITY in it }.keys
                 displayNodes(nodes)
@@ -70,6 +76,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
 
     private fun displayNodes(nodes: Set<Node>) {
         val message = if (nodes.isEmpty()) {
