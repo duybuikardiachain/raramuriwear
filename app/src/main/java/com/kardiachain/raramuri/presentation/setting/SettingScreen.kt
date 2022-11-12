@@ -11,8 +11,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.wear.compose.material.ScalingLazyColumn
 import androidx.wear.compose.material.Text
-import com.whydah.raramuri.presentation.component.CustomDoubleTextChip
-import com.whydah.raramuri.presentation.component.CustomSingleTextChip
+import com.kardiachain.raramuri.presentation.component.CustomDoubleTextChip
+import com.kardiachain.raramuri.presentation.component.CustomSingleTextChip
 
 @Composable
 fun SettingScreen(
